@@ -1,0 +1,11 @@
+<launch>
+    <!-- <arg name="urdf_file" default="$(find odom_sim)/urdf/robot.urdf.xacro" />
+    <param name="robot_description" textfile="$(arg urdf_file)" /> -->
+
+    <!-- <arg name="mymodel" default="$(find odometry)/urdf/realrobot.urdf.xacro" />
+    <param name="myrobot_description" command="$(find xacro)/xacro $(arg mymodel)" /> -->
+    <arg name="model" default="$(find odometry)/urdf/realrobot.urdf.xacro"/>
+
+    <param name="robot_description" textfile="$(arg model)" />
+  </launch>
+  
