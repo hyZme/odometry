@@ -36,21 +36,23 @@ Turtlebot3Fake::~Turtlebot3Fake()
 bool Turtlebot3Fake::init()
 {
   // initialize ROS parameter
+  wheel_seperation_ = 0.195;
+  turning_radius_   = 0.0975;
+  robot_radius_     = 0.0325;
+  // std::string robot_model = nh_.param<std::string>("tb3_model", "");
 
-  std::string robot_model = nh_.param<std::string>("tb3_model", "");
-
-  if (!robot_model.compare("burger"))
-  {
-    wheel_seperation_ = 0.370;
-    turning_radius_   = 0.185;
-    robot_radius_     = 0.10;
-  }
-  else if (!robot_model.compare("waffle") || !robot_model.compare("waffle_pi"))
-  {
-    wheel_seperation_ = 0.287;
-    turning_radius_   = 0.1435;
-    robot_radius_     = 0.220;
-  }
+  // if (!robot_model.compare("burger"))
+  // {
+  //   wheel_seperation_ = 0.370;
+  //   turning_radius_   = 0.185;
+  //   robot_radius_     = 0.10;
+  // }
+  // else if (!robot_model.compare("waffle") || !robot_model.compare("waffle_pi"))
+  // {
+  //   wheel_seperation_ = 0.287;
+  //   turning_radius_   = 0.1435;
+  //   robot_radius_     = 0.220;
+  // }
 
   nh_.param("wheel_left_joint_name", joint_states_name_[LEFT],  std::string("joint_left_wheel"));
   nh_.param("wheel_right_joint_name", joint_states_name_[RIGHT],  std::string("joint_right_wheel"));
@@ -58,8 +60,8 @@ bool Turtlebot3Fake::init()
   nh_.param("odom_frame", odom_.header.frame_id, std::string("odom"));
   nh_.param("base_frame", odom_.child_frame_id, std::string("base_footprint"));
 
-  nh_.param("hehe", odom_1.header.frame_id, std::string("base_footprint"));
-  nh_.param("haha", odom_1.child_frame_id, std::string("base_link"));
+  // nh_.param("hehe", odom_1.header.frame_id, std::string("base_footprint"));
+  // nh_.param("haha", odom_1.child_frame_id, std::string("base_link"));
 
   // initialize variables
   wheel_speed_cmd_[LEFT]  = 0.0;
@@ -100,7 +102,7 @@ bool Turtlebot3Fake::init()
   odom_pub_         = nh_.advertise<nav_msgs::Odometry>("odom", 100);
 
   // initialize subscribers
-  cmd_vel_sub_  = nh_.subscribe("cmd_vel", 100,  &Turtlebot3Fake::commandVelocityCallback, this);
+  cmd_vel_sub_  = nh_.subscribe("encoder", 100,  &Turtlebot3Fake::commandVelocityCallback, this);
 
   prev_update_time_ = ros::Time::now();
 
@@ -114,11 +116,11 @@ void Turtlebot3Fake::commandVelocityCallback(const geometry_msgs::TwistConstPtr 
 {
   last_cmd_vel_time_ = ros::Time::now();
 
-  goal_linear_velocity_  = cmd_vel_msg->linear.x;
-  goal_angular_velocity_ = cmd_vel_msg->angular.z;
+  // goal_linear_velocity_  = cmd_vel_msg->linear.x;
+  // goal_angular_velocity_ = cmd_vel_msg->angular.z;
 
-  wheel_speed_cmd_[LEFT]  = cmd_vel_msg->linear.x;
-  wheel_speed_cmd_[RIGHT] = cmd_vel_msg->angular.z;
+  wheel_speed_cmd_[LEFT]  = cmd_vel_msg->linear.y;
+  wheel_speed_cmd_[RIGHT] = cmd_vel_msg->linear.x;
 }
 
 /*******************************************************************************
@@ -133,14 +135,14 @@ bool Turtlebot3Fake::updateOdometry(ros::Duration diff_time)
   wheel_l = wheel_r     = 0.0;
   delta_s = delta_theta = 0.0;
 
-  v[LEFT]  = wheel_speed_cmd_[LEFT];
+  v[LEFT]  = wheel_speed_cmd_[LEFT]*0.1047; //convert from rpm to rad/s
   // w[LEFT]  = v[LEFT] / WHEEL_RADIUS;  // w = v / r
   w[LEFT] = v[LEFT];
-  v[RIGHT] = wheel_speed_cmd_[RIGHT];
+  v[RIGHT] = wheel_speed_cmd_[RIGHT]*0.1047;
   // w[RIGHT] = v[RIGHT] / WHEEL_RADIUS;
   w[RIGHT] = v[RIGHT];
 
-  last_velocity_[LEFT]  = w[LEFT];
+  last_velocity_[LEFT]  = w[LEFT]; // rad/s
   last_velocity_[RIGHT] = w[RIGHT];
 
   wheel_l = w[LEFT]  * diff_time.toSec();
@@ -208,18 +210,18 @@ void Turtlebot3Fake::updateTF(geometry_msgs::TransformStamped& odom_tf)
   odom_tf.transform.rotation = odom_.pose.pose.orientation;
 }
 
-void Turtlebot3Fake::updateTF_1(geometry_msgs::TransformStamped& odom_tfk)
-{
-  odom_tfk.header = odom_1.header;
-  odom_tfk.child_frame_id = odom_1.child_frame_id;
-  odom_tfk.transform.translation.x = 0;
-  odom_tfk.transform.translation.y = 0;
-  odom_tfk.transform.translation.z = 0;
-  odom_tfk.transform.rotation.x = 0;
-  odom_tfk.transform.rotation.y = 0;
-  odom_tfk.transform.rotation.z = 0;
-  odom_tfk.transform.rotation.w = 1;
-}
+// void Turtlebot3Fake::updateTF_1(geometry_msgs::TransformStamped& odom_tfk)
+// {
+//   odom_tfk.header = odom_1.header;
+//   odom_tfk.child_frame_id = odom_1.child_frame_id;
+//   odom_tfk.transform.translation.x = 0;
+//   odom_tfk.transform.translation.y = 0;
+//   odom_tfk.transform.translation.z = 0;
+//   odom_tfk.transform.rotation.x = 0;
+//   odom_tfk.transform.rotation.y = 0;
+//   odom_tfk.transform.rotation.z = 0;
+//   odom_tfk.transform.rotation.w = 1;
+// }
 /*******************************************************************************
 * Update function
 *******************************************************************************/

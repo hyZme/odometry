@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- roslaunch imu robot0.launch-->
+    <node pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" name="teleop_twist_keyboard" output="screen"/>
+
+    <include file="$(find odometry)/launch/realrobot_view.launch"/>
+
+    <!-- <include file="$(find mapping)/launch/gmapping.launch"/> -->
+</launch>
